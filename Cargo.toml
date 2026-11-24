@@ -1,0 +1,14 @@
+[package]
+name = "hazard3-async"
+version = "0.1.0"
+edition = "2024"
+description = "An unofficial, independent async embedded Rust framework targeting Hazard3 RISC-V cores (RP2350), featuring native ESP-NOW over CYW43."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/jorgeandrecastro/hazard3-async"
+homepage = "https://github.com/jorgeandrecastro/hazard3-async"
+documentation = "https://docs.rs/hazard3-async"
+readme = "README.md"
+keywords = ["riscv", "hazard3", "rp2350", "async", "embedded"]
+categories = ["embedded", "no-std", "asynchronous"]
+
+[dependencies]
