@@ -8,7 +8,7 @@
 > **Independent RISC-V async embedded Rust ecosystem.**
 > Maintained by [Jorge Andre Castro](https://github.com/jorgeandrecastro) at <https://github.com/jorgeandrecastro/Hazard3>.
 >
-> `hazard3-async` is a pure RISC-V ecosystem built for the **RP2350 Hazard3 cores**. It removes all Arm Cortex-M and RP2040 overhead to stay lean, fast, and focused on modern RISC-V hardware, featuring **native bidirectional ESP-NOW over CYW43**, custom RISC-V linking, and standalone drivers for sensors, OLED displays and MQTT.
+> `hazard3-async` is a pure RISC-V ecosystem built for the **RP2350 Hazard3 cores**. It removes all Arm Cortex-M and RP2040 overhead to stay lean, fast, and focused on modern RISC-V hardware, featuring **native bidirectional ESP-NOW over CYW43**, custom RISC-V linking, and standalone drivers for sensors, OLED/TFT displays and MQTT.
 
 ---
 
@@ -20,6 +20,7 @@
   - [Core Runtime, HAL & Networking](#core-runtime-hal--networking)
   - [Standalone Drivers, Sensors & Protocols](#standalone-drivers-sensors--protocols)
   - [Display Stack (SSD1306)](#display-stack-ssd1306)
+  - [Display Stack (ST7789V)](#display-stack-st7789v)
   - [Tooling & Linker](#tooling--linker)
 - [Quick Start](#quick-start)
 - [Migration from Legacy `*-riscv` Packages](#migration-from-legacy--riscv-packages)
@@ -40,7 +41,7 @@
 
 ```
  Your application
- ├── Drivers & protocols   bmp280 · am2302 · ssd1306 (+graphics, +physics, +3d) · mqtt-lite
+ ├── Drivers & protocols   bmp280 · am2302 · ssd1306 (+graphics, +physics, +3d) · st7789v (+sprite, +plot) · mqtt-lite
  ├── Networking            cyw43 (Wi-Fi / BLE / ESP-NOW) · cyw43-pio · net-async
  ├── Runtime               executor · time · sync · embedded-hal adapters
  ├── HAL                   hazard3-rp  (RP2350, Hazard3 only)
@@ -113,6 +114,23 @@ hazard3-ssd1306-physics  ┴→  hazard3-ssd1306-graphics  →  hazard3-ssd1306 
 
 > Pick only the layers you need: the driver alone is enough to push a framebuffer, the others are optional.
 
+### Display Stack (ST7789V)
+
+A layered stack for ST7789V color TFT/LCD displays on Hazard3: start with the driver, then add sprites and plotting as needed.
+
+| Crate | Layer | Role |
+| :--- | :--- | :--- |
+| [`hazard3-st7789v`](https://crates.io/crates/hazard3-st7789v) | Driver | Async `no_std` ST7789V TFT/LCD driver for Hazard3 |
+| [`hazard3-st7789v-sprite`](https://crates.io/crates/hazard3-st7789v-sprite) | Sprites | Sprite rendering for ST7789V displays |
+| [`hazard3-st7789v-plot`](https://crates.io/crates/hazard3-st7789v-plot) | Plotting | Real-time plotting / graphing for ST7789V displays |
+
+```
+hazard3-st7789v-sprite  ┐
+hazard3-st7789v-plot    ┴→  hazard3-st7789v  →  hazard3-rp (SPI)
+```
+
+> Pick only the layers you need: the driver alone is enough to push pixels, the others are optional.
+
 ### Tooling & Linker
 
 | Crate | Role |
@@ -151,6 +169,11 @@ hazard3-ssd1306 = "*"
 hazard3-ssd1306-graphics = "*"
 hazard3-ssd1306-physics = "*"
 hazard3-ssd1306-3d = "*"
+
+# Optional ST7789V display stack (replace "*" with the latest versions)
+hazard3-st7789v = "*"
+hazard3-st7789v-sprite = "*"
+hazard3-st7789v-plot = "*"
 ```
 
 ### 3. Build for RP2350 Hazard3
@@ -196,6 +219,7 @@ All legacy `*-riscv` packages have been yanked from crates.io and superseded by 
 - **Wireless & ESP-NOW (`hazard3-cyw43` / `hazard3-cyw43-pio`):** Validated on Raspberry Pi Pico 2 W hardware with bidirectional ESP-NOW PING/PONG against an ESP32-C3 Mini (1,000 exchanges, 0 errors, 13.732 ms average RTT), CYW43 LED control, and OLED display integration.
 - **Sensors & MQTT (`Hazard3-bmp280`, `hazard3-am2302`, `hazard3-mqtt-lite`):** Built as standalone `no_std` async crates using `embedded-hal-async` and `embedded-io-async` traits.
 - **Display stack (`hazard3-ssd1306`, `-graphics`, `-physics`, `-3d`):** Standalone `no_std` async crates for SSD1306 OLED displays, used together with the CYW43 / ESP-NOW demos.
+- **Display stack (`hazard3-st7789v`, `-sprite`, `-plot`):** Standalone `no_std` async crates for ST7789V color displays.
 
 ---
 
