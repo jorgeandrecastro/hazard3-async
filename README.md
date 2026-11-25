@@ -1,3 +1,4 @@
+
 # hazard3-async
 
 [![Target](https://img.shields.io/badge/target-riscv32imac--unknown--none--elf-blue)](#quick-start)
@@ -5,10 +6,13 @@
 [![no_std](https://img.shields.io/badge/no__std-async-orange)](#ecosystem-crates)
 [![License](https://img.shields.io/badge/license-MIT%20%2F%20Apache--2.0-lightgrey)](#license--acknowledgements)
 
+A special thanks to everyone in the Rust embedded community and to all developers whose open-source work, contributions, and feedback help make this ecosystem possible. Your efforts inspire continuous improvement and make independent innovation possible. Thank you for being part of the journey! ❤️
+
 > **Independent RISC-V async embedded Rust ecosystem.**
+>
 > Maintained by [Jorge Andre Castro](https://github.com/jorgeandrecastro) at <https://github.com/jorgeandrecastro/Hazard3>.
 >
-> `hazard3-async` is a pure RISC-V ecosystem built for the **RP2350 Hazard3 cores**. It removes all Arm Cortex-M and RP2040 overhead to stay lean, fast, and focused on modern RISC-V hardware, featuring **native bidirectional ESP-NOW over CYW43**, custom RISC-V linking, and standalone drivers for sensors, OLED/TFT displays and MQTT.
+> `hazard3-async` is a pure RISC-V ecosystem built for the **RP2350 Hazard3 cores**. It removes all Arm Cortex-M and RP2040 overhead to stay lean, fast, and focused on modern RISC-V hardware, featuring **native bidirectional ESP-NOW over CYW43**, custom RISC-V linking, and standalone drivers for sensors, OLED/TFT displays, mathematics, and MQTT.
 
 ---
 
@@ -19,6 +23,7 @@
 - [Ecosystem Crates](#ecosystem-crates)
   - [Core Runtime, HAL & Networking](#core-runtime-hal--networking)
   - [Standalone Drivers, Sensors & Protocols](#standalone-drivers-sensors--protocols)
+  - [Embedded Mathematics](#embedded-mathematics)
   - [Display Stack (SSD1306)](#display-stack-ssd1306)
   - [Display Stack (ST7789V)](#display-stack-st7789v)
   - [Tooling & Linker](#tooling--linker)
@@ -36,19 +41,21 @@
 
 - **100% RISC-V only:** All Arm Cortex-M and RP2040 code, interrupt vector tables, and conditional `cfg` flags are stripped out. For Arm or RP2040 targets, use upstream [Embassy](https://github.com/embassy-rs/embassy).
 - **Source-compatible library names:** Core crates preserve standard Rust library names (`embassy_rp`, `embassy_time`, `embassy_executor`, `embassy_net`, `cyw43`, `rp_pac`) so existing async Rust code works seamlessly by aliasing `package = "hazard3-*"` in `Cargo.toml`.
-- **Modular & fast-moving:** Independent standalone crates for sensors, displays, protocols, and wireless links can be updated and shipped rapidly without upstream bottlenecks.
+- **Modular & fast-moving:** Independent standalone crates for sensors, displays, protocols, mathematics, and wireless links can be updated and shipped rapidly without upstream bottlenecks.
 - **Async everywhere:** Drivers are built on `embedded-hal-async` and `embedded-io-async`, so they plug directly into the `hazard3-executor`.
 
-```
- Your application
- ├── Drivers & protocols   bmp280 · am2302 · ssd1306 (+graphics, +physics, +3d) · st7789v (+sprite, +plot) · mqtt-lite
- ├── Networking            cyw43 (Wi-Fi / BLE / ESP-NOW) · cyw43-pio · net-async
- ├── Runtime               executor · time · sync · embedded-hal adapters
- ├── HAL                   hazard3-rp  (RP2350, Hazard3 only)
- └── PAC & linker          hazard3-rp-pac · rp2350-riscv-linker
+```text
+Your application
+├── Drivers & protocols   bmp280 · am2302 · gl5528 · gy-bmi160 · ttp223b · mqtt-lite
+├── Mathematics           embedded-maths
+├── Displays              ssd1306 (+graphics, +physics, +3d) · st7789v (+sprite, +plot)
+├── Networking            cyw43 (Wi-Fi / BLE / ESP-NOW) · cyw43-pio · net-async
+├── Runtime               executor · time · sync · embedded-hal adapters
+├── HAL                   hazard3-rp (RP2350, Hazard3 only)
+└── PAC & linker          hazard3-rp-pac · rp2350-riscv-linker
 ```
 
-> **Important:** Always use the core `hazard3-*` crates **together** to avoid duplicate or incompatible copies of underlying runtime dependencies.
+> **Important:** Always use the core `hazard3-*` crates together to avoid duplicate or incompatible copies of underlying runtime dependencies.
 
 ---
 
@@ -90,11 +97,24 @@
 
 ### Standalone Drivers, Sensors & Protocols
 
+Independent asynchronous `no_std` drivers and communication protocols for embedded applications.
+
 | Crate | Role |
 | :--- | :--- |
 | [`Hazard3-bmp280`](https://crates.io/crates/Hazard3-bmp280) | Async `no_std` driver for the Bosch BMP280 temperature & pressure sensor |
 | [`hazard3-am2302`](https://crates.io/crates/hazard3-am2302) | Async `no_std` driver for the AM2302 / DHT22 temperature & humidity sensor |
+| [`hazard3-gl5528`](https://crates.io/crates/hazard3-gl5528) | Async `no_std` driver for the GL5528 photoresistor (LDR), using the RP2040/RP235x ADC |
+| [`hazard3-gy-bmi160`](https://crates.io/crates/hazard3-gy-bmi160) | Driver for the GY-BMI160 inertial measurement module |
+| [`hazard3-ttp223b`](https://crates.io/crates/hazard3-ttp223b) | Async `no_std` GPIO driver for the TTP223B capacitive touch sensor, with software debouncing |
 | [`hazard3-mqtt-lite`](https://crates.io/crates/hazard3-mqtt-lite) | Lightweight `no_std` async MQTT client built on `embedded-io-async` |
+
+### Embedded Mathematics
+
+Reusable mathematical functionality for embedded Rust applications.
+
+| Crate | Role |
+| :--- | :--- |
+| [`embedded-maths`](https://crates.io/crates/embedded-maths) | Embedded-oriented mathematical library for numerical operations and mathematical primitives |
 
 ### Display Stack (SSD1306)
 
@@ -107,8 +127,8 @@ A layered stack for SSD1306 OLED displays on Hazard3: start with the driver, the
 | [`hazard3-ssd1306-physics`](https://crates.io/crates/hazard3-ssd1306-physics) | Physics | Lightweight physics / animation layer for SSD1306 displays |
 | [`hazard3-ssd1306-3d`](https://crates.io/crates/hazard3-ssd1306-3d) | 3D | 3D rendering for SSD1306 displays |
 
-```
-hazard3-ssd1306-3d  ┐
+```text
+hazard3-ssd1306-3d       ┐
 hazard3-ssd1306-physics  ┴→  hazard3-ssd1306-graphics  →  hazard3-ssd1306  →  hazard3-rp (I2C / SPI)
 ```
 
@@ -121,10 +141,10 @@ A layered stack for ST7789V color TFT/LCD displays on Hazard3: start with the dr
 | Crate | Layer | Role |
 | :--- | :--- | :--- |
 | [`hazard3-st7789v`](https://crates.io/crates/hazard3-st7789v) | Driver | Async `no_std` ST7789V TFT/LCD driver for Hazard3 |
-| [`hazard3-st7789v-sprite`](https://crates.io/crates/hazard3-st7789v-sprite) | Sprites | Sprite rendering for ST7789V displays |
-| [`hazard3-st7789v-plot`](https://crates.io/crates/hazard3-st7789v-plot) | Plotting | Real-time plotting / graphing for ST7789V displays |
+| [`hazard3-st7789v-sprite`](https://crates.io/crates/hazard3-st7789v-sprite) | Sprites | Sprite rendering and framebuffer-based animation engine for ST7789V displays |
+| [`hazard3-st7789v-plot`](https://crates.io/crates/hazard3-st7789v-plot) | Plotting | Configurable Cartesian plotting engine and real-time graphing for ST7789V displays |
 
-```
+```text
 hazard3-st7789v-sprite  ┐
 hazard3-st7789v-plot    ┴→  hazard3-st7789v  →  hazard3-rp (SPI)
 ```
@@ -135,7 +155,10 @@ hazard3-st7789v-plot    ┴→  hazard3-st7789v  →  hazard3-rp (SPI)
 
 | Crate | Role |
 | :--- | :--- |
-| [`rp2350-riscv-linker`](https://crates.io/crates/rp2350-riscv-linker) | Custom linker scripts, `IMAGE_DEF` blocks, and memory layout for RP2350 RISC-V |
+| [`rp2350-riscv-linker`](https://crates.io/crates/rp2350-riscv-linker) | Custom linker scripts, `IMAGE_DEF` blocks, and memory layout for RP2350 RISC-V Hazard3 |
+| [`rp2350-linker`](https://crates.io/crates/rp2350-linker) | Separate RP2350 linker tooling; not a replacement for the Hazard3 RISC-V linker |
+
+> **Architecture note:** `rp2350-riscv-linker` is the linker package used by this RISC-V ecosystem. Do not substitute it with an ARM/Cortex-M33 linker package.
 
 ---
 
@@ -153,28 +176,42 @@ Alias the `hazard3-*` packages to keep standard imports (`embassy_rp::*`, `embas
 
 ```toml
 [dependencies]
+
+# Core HAL
 embassy-rp = { package = "hazard3-rp", version = "0.2", features = ["rp235xa", "time-driver", "critical-section-impl", "imagedef-none"] }
+
+# Async runtime
 embassy-time = { package = "hazard3-time", version = "0.1" }
 embassy-executor = { package = "hazard3-executor", version = "0.1", features = ["platform-riscv32", "executor-thread"] }
 embassy-sync = { package = "hazard3-sync", version = "0.1" }
-rp2350-riscv-linker = "1.0.0"
+
+# RISC-V linker
+rp2350-riscv-linker = "0.2"
 
 # Optional sensors & protocols
 hazard3-am2302 = "0.8"
 hazard3-mqtt-lite = "0.4"
-Hazard3-bmp280 = "*"            # replace "*" with the latest version
+Hazard3-bmp280 = "*"
+hazard3-gl5528 = "0.2.2"
+hazard3-gy-bmi160 = "*"
+hazard3-ttp223b = "0.2.0"
 
-# Optional OLED display stack (replace "*" with the latest versions)
+# Optional mathematical library
+embedded-maths = "*"
+
+# Optional SSD1306 display stack
 hazard3-ssd1306 = "*"
 hazard3-ssd1306-graphics = "*"
 hazard3-ssd1306-physics = "*"
 hazard3-ssd1306-3d = "*"
 
-# Optional ST7789V display stack (replace "*" with the latest versions)
-hazard3-st7789v = "*"
-hazard3-st7789v-sprite = "*"
+# Optional ST7789V display stack
+hazard3-st7789v = "0.8"
+hazard3-st7789v-sprite = "0.5"
 hazard3-st7789v-plot = "*"
 ```
+
+Replace wildcard versions with validated release versions before publishing an application.
 
 ### 3. Build for RP2350 Hazard3
 
@@ -216,16 +253,28 @@ All legacy `*-riscv` packages have been yanked from crates.io and superseded by 
 ## Hardware Validation & Benchmarks
 
 - **RP2350 core (`hazard3-rp`):** Validated via `cargo check` for `rp235xa` and `rp235xb` on `riscv32imac-unknown-none-elf` (including `RUSTFLAGS="-D unexpected-cfgs"`), multicore via RISC-V `SIO_IRQ_FIFO`, and real hardware execution on Raspberry Pi Pico 2 / Pico 2 W.
+
 - **Wireless & ESP-NOW (`hazard3-cyw43` / `hazard3-cyw43-pio`):** Validated on Raspberry Pi Pico 2 W hardware with bidirectional ESP-NOW PING/PONG against an ESP32-C3 Mini (1,000 exchanges, 0 errors, 13.732 ms average RTT), CYW43 LED control, and OLED display integration.
-- **Sensors & MQTT (`Hazard3-bmp280`, `hazard3-am2302`, `hazard3-mqtt-lite`):** Built as standalone `no_std` async crates using `embedded-hal-async` and `embedded-io-async` traits.
-- **Display stack (`hazard3-ssd1306`, `-graphics`, `-physics`, `-3d`):** Standalone `no_std` async crates for SSD1306 OLED displays, used together with the CYW43 / ESP-NOW demos.
-- **Display stack (`hazard3-st7789v`, `-sprite`, `-plot`):** Standalone `no_std` async crates for ST7789V color displays.
+
+- **Sensors & MQTT (`Hazard3-bmp280`, `hazard3-am2302`, `hazard3-mqtt-lite`):** Standalone `no_std` async crates using `embedded-hal-async` and `embedded-io-async` traits.
+
+- **Additional sensors (`hazard3-gl5528`, `hazard3-gy-bmi160`, `hazard3-ttp223b`):** Independent drivers covering light measurement, inertial sensing, and capacitive touch input.
+
+- **Embedded mathematics (`embedded-maths`):** Mathematical functionality for resource-constrained embedded applications.
+
+- **SSD1306 display stack (`hazard3-ssd1306`, `-graphics`, `-physics`, `-3d`):** Standalone `no_std` async crates for SSD1306 OLED displays, used together with the CYW43 / ESP-NOW demos.
+
+- **ST7789V display stack (`hazard3-st7789v`, `-sprite`, `-plot`):** Standalone `no_std` async crates for ST7789V color displays, including framebuffer-based sprite rendering and Cartesian plotting.
+
+- **RP2350 tooling (`rp2350-riscv-linker`):** RISC-V-specific linker infrastructure for Hazard3 firmware.
 
 ---
 
 ## Contributing
 
-Bug reports, hardware test feedback, and issues, especially around Hazard3 interrupt handling, peripherals, new sensor drivers, or display features, are welcome on the GitHub issue tracker. Pull requests reintroducing Arm or RP2040 support are out of scope.
+Bug reports, hardware test feedback, and issues, especially around Hazard3 interrupt handling, peripherals, new sensor drivers, mathematical functionality, or display features, are welcome on the GitHub issue tracker.
+
+Pull requests reintroducing Arm or RP2040 support into the Hazard3-specific core are out of scope.
 
 ---
 
@@ -234,6 +283,8 @@ Bug reports, hardware test feedback, and issues, especially around Hazard3 inter
 - **Core Embassy-derived crates:** Dual-licensed under Apache License, Version 2.0 (`LICENSE-APACHE`) or MIT License (`LICENSE-MIT`) at your option.
 - **Networking crates (`hazard3-net`, `hazard3-net-driver`):** 0-Clause BSD License.
 - **PAC (`hazard3-rp-pac`):** BSD-3-Clause License.
-- **SSD1306 crates:** the upstream [`ssd1306`](https://crates.io/crates/ssd1306) driver is dual-licensed MIT / Apache-2.0; keep its notices if the Hazard3 variant is derived from it.
+- **SSD1306 crates:** The upstream [`ssd1306`](https://crates.io/crates/ssd1306) driver is dual-licensed MIT / Apache-2.0; keep its notices if the Hazard3 variant is derived from it.
 
-`hazard3-async` is an independent project derived from Embassy and Xarxa. All original copyright notices and author credits are preserved. This project is not affiliated with or endorsed by the Embassy, Xarxa, or Raspberry Pi teams.
+`hazard3-async` is an independent project derived from Embassy and Xarxa. All original copyright notices and author credits are preserved.
+
+This project is not affiliated with or endorsed by the Embassy, Xarxa, or Raspberry Pi teams.
