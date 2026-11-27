@@ -1,6 +1,6 @@
 [package]
 name = "hazard3-async"
-version = "0.4.0"
+version = "0.5.0"
 edition = "2024"
 description = "An unofficial, independent async embedded Rust framework targeting Hazard3 RISC-V cores (RP2350), featuring native ESP-NOW over CYW43."
 license = "MIT OR Apache-2.0"
